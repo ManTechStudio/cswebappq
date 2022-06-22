@@ -1,4 +1,6 @@
+import 'package:cswebapp/pages/loading_2.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:html/parser.dart' as htmlparser;
 import 'package:html/dom.dart' as dom;
@@ -10,6 +12,9 @@ import 'package:cswebapp/pages/loading.dart';
 import 'package:cswebapp/pages/test.dart';
 import 'package:cswebapp/services/api.dart';
 import 'package:cswebapp/services/categories_api.dart';
+import 'package:multiple_stream_builder/multiple_stream_builder.dart';
+import 'package:provider/provider.dart';
+import 'package:uni_links/uni_links.dart';
 import 'bloc/event.dart';
 
 void main() {
@@ -43,7 +48,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   double SECTION_HEIGHT = 50;
   final Bloc _pageBloc = Bloc();
-
+  DeepLinkBloc _bloc = DeepLinkBloc();
   int index = 1;
   Widget func(int i, BuildContext context, double appBar_height) {
     print(i);
@@ -53,6 +58,22 @@ class _MyHomePageState extends State<MyHomePage> {
             SECTION_HEIGHT -
             20,
         child: Home(index: i));
+  }
+  Future<String?> initialLink() async {
+    try {
+      final initialLink = await getInitialLink();
+      print(initialLink.toString());
+      return initialLink;
+    } on PlatformException catch (exception){
+      print(exception.message);
+    }
+  }
+  String deepLinkURL = "";
+
+  @override
+  void initState() {
+
+    super.initState();
   }
 
   @override
@@ -104,116 +125,141 @@ class _MyHomePageState extends State<MyHomePage> {
         //     ],
         //   ),
         // ),
-        body: StreamBuilder<int>(
-            stream: _pageBloc.pageStream,
-            initialData: 1,
-            builder: (context, snapshot) {
-              return ListView(
-                children: [
-                  Container(
-                      height: 50,
-                      child: ListView(
-                        scrollDirection: Axis.horizontal,
-                        children: [
-                          for (var i = 1; i <= 9; i++)
-                            Padding(
-                              padding: EdgeInsets.all(5),
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  fixedSize: Size(90, 40),
-                                  elevation: 5,
-                                  primary: (i != (snapshot.data as int))
-                                      ? buttonColor
-                                      : buttonselectColor,
-                                ),
-                                onPressed: () {
-                                  index = i;
+        body: Provider<DeepLinkBloc>(
+        create: (context) => _bloc,
+    dispose: (context, bloc) => bloc.dispose(),
+    child:StreamBuilder2<String,int>(
+            streams: Tuple2(_bloc.state,_pageBloc.pageStream),
+          initialData: Tuple2("null",1),
+          builder: (context,snapshots) {
+              dynamic snapshot=snapshots.item2;
 
-                                  _pageBloc.eventSink.add(PageChange(i));
-                                  PAGENOBLOC.eventSink.add(PageNoChange(1));
-                                },
-                                child: Text("${SECTIONS[i - 1]}",
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold)),
-                              ),
-                            ),
-                          Padding(
-                            padding: EdgeInsets.all(5),
-                            child: Material(
-                              elevation: 5,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                    color: (index <= 9)
-                                        ? buttonColor
-                                        : buttonselectColor,
-                                    borderRadius: new BorderRadius.all(
-                                        Radius.circular(5))),
 
-                                //color: Colors.blue,
-                                child: DropdownButtonHideUnderline(
-                                  child: DropdownButton<int>(
-                                    elevation: 5,
 
-                                    alignment: Alignment.center,
-                                    hint: Text("राज्य",
+                  if(snapshots.item1.data !=null && Uri.parse(snapshots.item1.data!).queryParameters['p']!=null)
+                    {
+                    WidgetsBinding.instance!.addPostFrameCallback((_) {
+
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (BuildContext context) => Loading_2(id:int.parse(Uri.parse(snapshots.item1.data!).queryParameters['p']!) ),
+                        ),
+                      );
+                      _bloc.stateSink.add("");
+
+                    });
+                        }
+                  return ListView(
+                    children: [
+
+                      Container(
+                          height: 50,
+                          child: ListView(
+                            scrollDirection: Axis.horizontal,
+                            children: [
+                              for (var i = 1; i <= 9; i++)
+                                Padding(
+                                  padding: EdgeInsets.all(5),
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      fixedSize: Size(90, 40),
+                                      elevation: 5,
+                                      primary: (i != (snapshot.data as int))
+                                          ? buttonColor
+                                          : buttonselectColor,
+                                    ),
+                                    onPressed: () {
+                                      index = i;
+
+                                      _pageBloc.eventSink.add(PageChange(i));
+                                      PAGENOBLOC.eventSink.add(PageNoChange(1));
+                                    },
+                                    child: Text("${SECTIONS[i - 1]}",
                                         style: TextStyle(
                                             color: Colors.white,
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold)),
-                                    disabledHint: Text("राज्य"),
-                                    //value: index,
-                                    icon: const Icon(
-                                      Icons.arrow_drop_down,
-                                      color: Colors.white,
+                                  ),
+                                ),
+                              Padding(
+                                padding: EdgeInsets.all(5),
+                                child: Material(
+                                  elevation: 5,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                        color: (index <= 9)
+                                            ? buttonColor
+                                            : buttonselectColor,
+                                        borderRadius: new BorderRadius.all(
+                                            Radius.circular(5))),
+
+                                    //color: Colors.blue,
+                                    child: DropdownButtonHideUnderline(
+                                      child: DropdownButton<int>(
+                                        elevation: 5,
+
+                                        alignment: Alignment.center,
+                                        hint: Text("राज्य",
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold)),
+                                        disabledHint: Text("राज्य"),
+                                        //value: index,
+                                        icon: const Icon(
+                                          Icons.arrow_drop_down,
+                                          color: Colors.white,
+                                        ),
+
+                                        style: const TextStyle(color: Colors.black),
+                                        underline: Container(
+                                            height: 2, color: Colors.white),
+                                        onChanged: (int? newValue) {
+                                          print(newValue.toString());
+                                          index = newValue!;
+
+                                          _pageBloc.eventSink
+                                              .add(PageChange(index));
+                                        },
+                                        items: <int>[
+                                          for (int j = 10; j < 20; j++) j
+                                        ].map<DropdownMenuItem<int>>((int value) {
+                                          return DropdownMenuItem<int>(
+                                            value: value,
+                                            child: Text("${SECTIONS[value - 1]}"),
+                                          );
+                                        }).toList(),
+                                      ),
                                     ),
-
-                                    style: const TextStyle(color: Colors.black),
-                                    underline: Container(
-                                        height: 2, color: Colors.white),
-                                    onChanged: (int? newValue) {
-                                      print(newValue.toString());
-                                      index = newValue!;
-
-                                      _pageBloc.eventSink
-                                          .add(PageChange(index));
-                                    },
-                                    items: <int>[
-                                      for (int j = 10; j < 20; j++) j
-                                    ].map<DropdownMenuItem<int>>((int value) {
-                                      return DropdownMenuItem<int>(
-                                        value: value,
-                                        child: Text("${SECTIONS[value - 1]}"),
-                                      );
-                                    }).toList(),
                                   ),
                                 ),
                               ),
-                            ),
-                          ),
-                        ],
-                      )),
-                  StreamBuilder(
-                      stream: PAGENOBLOC.pageNoStream,
-                      initialData: 1,
-                      builder: (context, snapshot2) {
-                        return Container(
-                            height: MediaQuery.of(context).size.height -
-                                appBar.preferredSize.height -
-                                SECTION_HEIGHT -
-                                20,
-                            child: Loading(
-                                index: (snapshot.data as int),
-                                page: (snapshot2.data as int))
-                            //return (snapshot.data as Widget);
-                            //return Test(index: (snapshot.data as int));
+                            ],
+                          )),
+                      StreamBuilder(
+                          stream: PAGENOBLOC.pageNoStream,
+                          initialData: 1,
+                          builder: (context, snapshot2) {
+                            return Container(
+                                height: MediaQuery.of(context).size.height -
+                                    appBar.preferredSize.height -
+                                    SECTION_HEIGHT -
+                                    20,
+                                child: Loading(
+                                    index: (snapshot.data as int),
+                                    page: (snapshot2.data as int))
+                                //return (snapshot.data as Widget);
+                                //return Test(index: (snapshot.data as int));
 
-                            );
-                      }),
-                  //func(index,context,appBar.preferredSize.height),
-                ],
-              );
-            }));
+                                );
+                          }),
+                      //func(index,context,appBar.preferredSize.height),
+                    ],
+                  );
+
+
+          }
+        )));
   }
 }

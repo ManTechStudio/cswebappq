@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cswebapp/bloc/event.dart';
 import 'package:cswebapp/pages/home_page.dart';
+import 'package:flutter/services.dart';
 
 import '../pages/test.dart';
 
@@ -37,5 +38,54 @@ class Bloc {
   void dispose() {
     _eventController.close();
     _pageController.close();
+  }
+}
+abstract class Bloc2 {
+  void dispose();
+}
+
+class DeepLinkBloc extends Bloc2 {
+
+  //Event Channel creation
+  static const stream = const EventChannel('http.chambalsandesh.com/events');
+
+  //Method channel creation
+  static const platform = const MethodChannel('http.chambalsandesh.com/channel');
+
+  StreamController<String> _stateController = StreamController();
+
+  Stream<String> get state => _stateController.stream;
+
+  Sink<String> get stateSink => _stateController.sink;
+
+
+  //Adding the listener into contructor
+  DeepLinkBloc() {
+    //Checking application start by deep link
+    startUri().then(_onRedirected);
+    //Checking broadcast stream, if deep link was clicked in opened appication
+    stream.receiveBroadcastStream().listen((d) => _onRedirected(d));
+  }
+
+
+  FutureOr<dynamic> _onRedirected(String uri) {
+    // Here can be any uri analysis, checking tokens etc, if it’s necessary
+    // Throw deep link URI into the BloC's stream
+    stateSink.add(uri);
+  }
+
+
+  @override
+  void dispose() {
+    _stateController.close();
+  }
+
+
+  Future<String> startUri() async {
+    try {
+      return await platform.invokeMethod('initialLink');
+    } on PlatformException catch (e) {
+      return "Failed to Invoke: '${e.message}'.";
+    }
   }
 }
