@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "762737302708",
+    "project_id": "chambalsandesh-53631",
+    "storage_bucket": "chambalsandesh-53631.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:762737302708:android:3470050277376a4c924be1",
+        "android_client_info": {
+          "package_name": "com.chambalSandeshcs.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "762737302708-4nkimnm9l9fvhsqt3fcs328vmterrt9n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAjyUHZECxScwHX85XIDa6HprIsbp9vQ3k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "762737302708-4nkimnm9l9fvhsqt3fcs328vmterrt9n.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
