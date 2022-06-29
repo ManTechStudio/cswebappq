@@ -1,4 +1,6 @@
 import 'package:cswebapp/pages/loading_2.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_html/flutter_html.dart';
@@ -16,8 +18,15 @@ import 'package:multiple_stream_builder/multiple_stream_builder.dart';
 import 'package:provider/provider.dart';
 import 'package:uni_links/uni_links.dart';
 import 'bloc/event.dart';
+Future<void> _messageHandler(RemoteMessage message) async {
+  print("OPENED");
+  print('background message ${message.notification!.body}');
+}
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  FirebaseMessaging.onBackgroundMessage(_messageHandler);
 
-void main() {
   runApp(const MyApp());
 }
 
@@ -69,11 +78,26 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
   String deepLinkURL = "";
-
+  late FirebaseMessaging messaging;
   @override
   void initState() {
 
     super.initState();
+    messaging = FirebaseMessaging.instance;
+    print("mes");
+    messaging.getToken().then((value){
+      print("TOKEN: $value");
+    });
+    messaging.subscribeToTopic("notify");
+    FirebaseMessaging.onMessageOpenedApp.listen((message) {
+      print('Message clicked!');
+    });
+    FirebaseMessaging.onMessage.listen((RemoteMessage event) {
+      print("message recieved");
+      print(event.notification!.body);
+
+    });
+
   }
 
   @override

@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:html/parser.dart';
 import 'package:cswebapp/bloc/event.dart';
 import 'package:cswebapp/constants.dart';
 import '../services/api.dart';
@@ -134,7 +135,9 @@ class _HomeState extends State<Home> {
                   IconButton(
                     icon: Icon(Icons.share),
                     onPressed: () {
-                      Share.share(' ${(data["list"])[0]["link"]}');
+                      final document = parse((data["list"])[0]["excerpt"]);
+                      String parsedString = parse(document.body!.text).documentElement!.text;
+                      Share.share(" *${(data["list"])[0]["title"]}* \n \n ${parsedString} \n ${(data["list"])[0]["link"]}");
                     },
                   ),
                 ]),
