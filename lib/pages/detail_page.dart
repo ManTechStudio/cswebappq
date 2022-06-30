@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:html/parser.dart';
 
 import '../constants.dart';
 
@@ -28,10 +29,16 @@ class _DetailsState extends State<Details> {
         appBar: AppBar(
             actions: [
               IconButton(onPressed: () {}, icon: Icon(Icons.bookmark_outline)),
-              IconButton(onPressed: () {
-                Share.share('${data["data"]["list"][data["index2"]]["link"]}');
-
-              }, icon: Icon(Icons.share)),
+              IconButton(
+                  onPressed: () {
+                    final document = parse(
+                        (data["data"]["list"])[data["index2"]]["excerpt"]);
+                    String parsedString =
+                        parse(document.body!.text).documentElement!.text;
+                    Share.share(
+                        " *${data["data"]["list"][data["index2"]]["title"]}* \n \n ${parsedString} \n ${data["data"]["list"][data["index2"]]["link"]}");
+                  },
+                  icon: Icon(Icons.share)),
             ],
             iconTheme: IconThemeData(color: Colors.white),
             actionsIconTheme: IconThemeData(color: Colors.white),
@@ -54,11 +61,10 @@ class _DetailsState extends State<Details> {
             Container(
                 height: MediaQuery.of(context).size.height / 3,
                 child: CachedNetworkImage(
-                    imageUrl: data["data"]["list"][data["index2"]]["image"],
+                  imageUrl: data["data"]["list"][data["index2"]]["image"],
                   placeholder: (context, url) =>
                       Center(child: CircularProgressIndicator()),
                   errorWidget: (context, url, error) => Icon(Icons.error),
-
                 )),
             Html(data: "${data["data"]["list"][data["index2"]]["content"]}"),
             SizedBox(width: 5),

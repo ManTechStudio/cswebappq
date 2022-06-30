@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:html/parser.dart';
 
 import '../constants.dart';
 
@@ -28,10 +29,15 @@ class _DetailsPageState extends State<DetailsPage> {
         appBar: AppBar(
             actions: [
               IconButton(onPressed: () {}, icon: Icon(Icons.bookmark_outline)),
-              IconButton(onPressed: () {
-                Share.share('${data["link"]}');
-
-              }, icon: Icon(Icons.share)),
+              IconButton(
+                  onPressed: () {
+                    final document = parse(data["excerpt"]);
+                    String parsedString =
+                        parse(document.body!.text).documentElement!.text;
+                    Share.share(
+                        " *${data["title"]}* \n \n ${parsedString} \n ${data["link"]}");
+                  },
+                  icon: Icon(Icons.share)),
             ],
             iconTheme: IconThemeData(color: Colors.white),
             actionsIconTheme: IconThemeData(color: Colors.white),
@@ -44,12 +50,10 @@ class _DetailsPageState extends State<DetailsPage> {
             Center(
                 child: Text("${data["title"]}",
                     style:
-                    TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
+                        TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
             SizedBox(height: 5),
-            Text(
-                "By ${(data["author"].toString())}"),
-            Text(
-                "${(data["date"].toString())}"),
+            Text("By ${(data["author"].toString())}"),
+            Text("${(data["date"].toString())}"),
             SizedBox(height: 5),
             Container(
                 height: MediaQuery.of(context).size.height / 3,
@@ -58,7 +62,6 @@ class _DetailsPageState extends State<DetailsPage> {
                   placeholder: (context, url) =>
                       Center(child: CircularProgressIndicator()),
                   errorWidget: (context, url, error) => Icon(Icons.error),
-
                 )),
             Html(data: "${data["content"]}"),
             SizedBox(width: 5),
